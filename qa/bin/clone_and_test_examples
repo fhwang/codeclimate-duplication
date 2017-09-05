@@ -17,6 +17,13 @@ if [ -n "$QA" ] || test_on_branch $CIRCLE_BRANCH; then
   cd "$examples"
 
   REPOS_PER_LANGUAGE=20
+  if [ -z "$CIRCLE_NODE_TOTAL" ]; then
+    PAGE="$(($CIRCLE_NODE_INDEX + 1))"
+    PER_PAGE="$(($REPOS_PER_LANGUAGE / $CIRCLE_NODE_INDEX))"
+  else
+    PAGE=1
+    PER_PAGE="$REPOS_PER_LANGUAGE"
+  fi
 
 	if [ -z "$LANGS" ]; then
 		LANGS=(ruby python php java javascript)
@@ -28,6 +35,7 @@ if [ -n "$QA" ] || test_on_branch $CIRCLE_BRANCH; then
     curl -G https://api.github.com/search/repositories \
         --data-urlencode "sort=stars" \
         --data-urlencode "per_page=$REPOS_PER_LANGUAGE" \
+        --data-urlencode "page=$PAGE" \
         --data-urlencode "order=desc" \
         --data-urlencode "q=language:$lang" | \
         jq --raw-output '.items | map(.full_name) | .[]' | \
